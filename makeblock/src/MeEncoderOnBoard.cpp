@@ -100,6 +100,7 @@ MeEncoderOnBoard::MeEncoderOnBoard()
 MeEncoderOnBoard::MeEncoderOnBoard(uint8_t slot)
 {
   _Slot = slot;
+  _callback = NULL;
   _Port_A = encoder_Port[slot].port_A;
   _Port_B = encoder_Port[slot].port_B;
   _Port_PWM = encoder_Port[slot].port_PWM;
@@ -637,7 +638,7 @@ void MeEncoderOnBoard::move(long position,float speed,int16_t extId,cb callback)
 void MeEncoderOnBoard::moveTo(long position,float speed,int16_t extId,cb callback)
 {
   encode_structure.targetSpeed = speed;
-  _extId = extId;
+  _extId = extId & 0xff;
   _Lock_flag = false;
   encode_structure.mode = PID_MODE;
   encode_structure.motionState = MOTION_WITH_POS;
@@ -827,18 +828,18 @@ int16_t MeEncoderOnBoard::pidPositionToPwm(void)
     return _Encoder_output;
   }
       
-  //speed pid;
-  if((_Lock_flag == false) && (abs(pos_error) >= encode_structure.targetSpeed * DECELERATION_DISTANCE_PITCH))
+  //speed pid; 
+  // 1==2 turn off for now, until i figure out wth this was trying to do
+  if(1 == 2 && (_Lock_flag == false) && (abs(pos_error) >= encode_structure.targetSpeed * DECELERATION_DISTANCE_PITCH))
   {
-    speed_error = encode_structure.currentSpeed - encode_structure.targetSpeed * (pos_error/abs(pos_error));
-    out_put_offset = encode_structure.PID_speed.P * speed_error;
-    out_put_offset = constrain(out_put_offset,-25,25);
-    encode_structure.PID_speed.Output = _Encoder_output;
-    encode_structure.PID_speed.Output -= out_put_offset;  
-    encode_structure.PID_speed.Output = constrain(encode_structure.PID_speed.Output,-255,255);
-    _Encoder_output = encode_structure.PID_speed.Output;
+    // speed_error = encode_structure.currentSpeed - encode_structure.targetSpeed * (pos_error/abs(pos_error));
+    // out_put_offset = encode_structure.PID_speed.P * speed_error;
+    // out_put_offset = constrain(out_put_offset,-25,25);
+    // encode_structure.PID_speed.Output = _Encoder_output;
+    // encode_structure.PID_speed.Output -= out_put_offset;  
+    // encode_structure.PID_speed.Output = constrain(encode_structure.PID_speed.Output,-255,255);
+    // _Encoder_output = encode_structure.PID_speed.Output;
   }
-  //position pid;
   else
   {
     if((_Lock_flag == false) && (abs(pos_error) > ENCODER_POS_DEADBAND))
@@ -863,9 +864,9 @@ int16_t MeEncoderOnBoard::pidPositionToPwm(void)
     else
     {
       _Lock_flag = true;
-      if(_callback != NULL)
-      {
-        _callback(_Slot,_extId);
+      if(_callback != NULL) {
+        _callback(_Slot, _extId);
+        _callback = NULL;
       }
       d_component = encode_structure.currentSpeed;
       out_put_offset = encode_structure.PID_pos.D * d_component;
@@ -873,6 +874,14 @@ int16_t MeEncoderOnBoard::pidPositionToPwm(void)
       encode_structure.PID_pos.Output = pos_error * encode_structure.PID_pos.P;
       encode_structure.PID_pos.Output -= out_put_offset;
       encode_structure.PID_pos.Output = constrain(encode_structure.PID_pos.Output,-255,255);
+
+      // Stop the motor
+      encode_structure.pulsePos = 8;
+      encode_structure.previousPwm = 500;
+      encode_structure.mode = DIRECT_MODE;
+      encode_structure.pulseEncoder = 9;
+      encode_structure.ratio = 39.267;
+
       _Encoder_output = encode_structure.PID_pos.Output;
     }
   }

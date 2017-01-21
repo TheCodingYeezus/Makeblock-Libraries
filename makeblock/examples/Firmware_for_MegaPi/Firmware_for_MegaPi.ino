@@ -25,6 +25,7 @@
 **************************************************************************/
 #include <Arduino.h>
 #include <MeMegaPi.h>
+#include "MeEncoderOnBoard.h"
 #include "MeEEPROM.h"
 #include <Wire.h>
 #include <SoftwareSerial.h>
@@ -168,6 +169,8 @@ boolean start_flag = false;
 boolean move_flag = false;
 boolean blink_flag = false;
 
+cb encoderCallback = NULL;
+
 String mVersion = "0e.01.012";
 //////////////////////////////////////////////////////////////////////////////////////
 float RELAX_ANGLE = -1;                    //Natural balance angle,should be adjustment according to your own car
@@ -221,8 +224,12 @@ float RELAX_ANGLE = -1;                    //Natural balance angle,should be adj
   #define GET_MEGAPI_MODE      0x72
 #define ENCODER_BOARD 61
   //Read type
-  #define ENCODER_BOARD_POS    0x01
-  #define ENCODER_BOARD_SPEED  0x02
+  #define ENCODER_BOARD_POS     0x01
+  #define ENCODER_BOARD_SPEED   0x02
+  #define ENCODER_BOARD_RUN     0x01
+  #define ENCODER_BOARD_MOVE    0x02
+  #define ENCODER_BOARD_MOVE_TO 0x03
+
 
 #define ENCODER_PID_MOTION     62
   //Secondary command
@@ -1288,6 +1295,16 @@ uint8_t* readUint8(int16_t idx,int16_t len)
  * \par Others
  *    None
  */
+
+
+void encoderMotorCallback(int16_t slot, int16_t extID) {
+   writeHead();
+   writeSerial(extID & 0xff);
+   writeSerial(0x01);
+   writeSerial(slot & 0xff);
+   writeEnd();
+}
+
 void runModule(uint8_t device)
 {
   //0xff 0x55 0x6 0x0 0x1 0xa 0x9 0x0 0x0 0xa
@@ -1306,25 +1323,47 @@ void runModule(uint8_t device)
       if(port == 0)
       {
         uint8_t slot = readBuffer(7);
-        int16_t speed_value = readShort(8);
+        uint8_t functionType = readBuffer(8);
+        int16_t speed_value = readShort(9);
         speed_value = -speed_value;
-
-        if(slot == SLOT_1)
-        {
-          Encoder_1.setTarPWM(speed_value);
+        if(functionType == ENCODER_BOARD_RUN) {
+            if(slot == SLOT_1) {
+              Encoder_1.setTarPWM(speed_value);
+            } else if(slot == SLOT_2) {
+              Encoder_2.setTarPWM(speed_value);
+            } else if(slot == SLOT_3) {
+              Encoder_3.setTarPWM(speed_value);
+            } else if(slot == SLOT_4) {
+              Encoder_4.setTarPWM(speed_value);
+            }
         }
-        else if(slot == SLOT_2)
-        {
-          Encoder_2.setTarPWM(speed_value);
+        else if(functionType == ENCODER_BOARD_MOVE) {
+            encoderCallback = encoderMotorCallback;
+            long motor_position = readLong(11);
+            if(slot == SLOT_1) {
+              Encoder_1.move(motor_position, speed_value, command_index, encoderMotorCallback);
+            } else if(slot == SLOT_2) {
+              Encoder_2.move(motor_position, speed_value, command_index, encoderCallback);
+            } else if(slot == SLOT_3) {
+              Encoder_3.move(motor_position, speed_value, command_index, encoderCallback);
+            } else if(slot == SLOT_4) {
+              Encoder_4.move(motor_position, speed_value, command_index, encoderCallback);
+            }
+        } 
+        else if(functionType == ENCODER_BOARD_MOVE_TO) {
+            encoderCallback = encoderMotorCallback;
+            long motor_position = readLong(11);
+            if(slot == SLOT_1) {
+              Encoder_1.moveTo(motor_position, speed_value, command_index, encoderCallback);
+            } else if(slot == SLOT_2) {
+              Encoder_2.moveTo(motor_position, speed_value, command_index, encoderCallback);
+            } else if(slot == SLOT_3) {
+              Encoder_3.moveTo(motor_position, speed_value, command_index, encoderCallback);
+            } else if(slot == SLOT_4) {
+              Encoder_4.moveTo(motor_position, speed_value, command_index, encoderCallback);
+            }
         }
-        else if(slot == SLOT_3)
-        {
-          Encoder_3.setTarPWM(speed_value);
-        }
-        else if(slot == SLOT_4)
-        {
-          Encoder_4.setTarPWM(speed_value);
-        }
+        
       }
       break;
     case JOYSTICK:
