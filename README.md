@@ -45,6 +45,7 @@ if __name__ == '__main__':
    bot.start('/dev/ttyS0')
    bot.sleep(.1)
    bot.encoderMotorRun(1, 100)
+```
 
 **MORE SOON**
 
