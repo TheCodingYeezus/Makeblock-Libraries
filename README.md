@@ -61,8 +61,8 @@ Examples/Firmware_for_MegaPi_New <- To distinguish between MakeBlock Offical Fir
 
 ##Tested Functions / Sensors
 
-#Me UltraSonic Sensor
-#Encoder Motor (all functions)
+######Me UltraSonic Sensor
+######Encoder Motor (all functions)
 
 ##Coming soon:
 1. Easier control of arm grabber
