@@ -35,10 +35,10 @@ sudo nano /boot/config.txt
    can always disable that functionality on the RaspberryPi and use the original UART (/dev/ttyAMA0) to communicate
    with the MegaPi. To do this you need to add another line to /boot.config.txt "dtoverlay=pi3-disable-bt"
 
-##Python Code
+
+###Python Code
 
 ```python
-
 from megapi import *
 if __name__ == '__main__':
    bot = MegaPi()
@@ -47,12 +47,20 @@ if __name__ == '__main__':
    bot.encoderMotorRun(1, 100)
 ```
 
+###Serial Byte Spec
+```
+ ff 55 len idx action device port  slot  data  a
+  0  1  2   3   4      5      6     7     8 
+```
+
 **MORE SOON**
 
-###Firmware version
+##Firmware version
 
 Examples/Firmware_for_MegaPi_New <- To distinguish between MakeBlock Offical Firmware
 
-###Tested Functions / Sensors
+##Tested Functions / Sensors
 
 **COMING SOON**
+
+
