@@ -1,44 +1,42 @@
-# Makeblock Library v3.24
+# MegaPi RPi3 - Makeblock Library v3.24
 
-Arduino Library for Makeblock Electronic Modules
+Allow control of MegaPi via RPi3 with Python/Node
 
-###How to use:
+##Connecting RPi3 & MegaPi:
 
-1. Download the source from the git https://github.com/Makeblock-official/Makeblock-Libraries
+The RaspberryPi communicates with MegaPi (and many microcontrollers) via the Serial Port.
+Skim over the eLinux page, our use case is the latter listed but it's good to understand what is going on.
 
-2. copy the makeblock folder to your arduino default library. Your Arduino library folder should now look like this  
-   (on Windows): [arduino installation directory]\libraries\makeblock\src  
-   (on MACOS): [arduino Package Contents]\contents\Java\libraries\makeblock\src
+[eLinux RPi Serial Connection](http://elinux.org/RPi_Serial_Connection)
 
-3. Open the Arduino Application. (If it's already open, you will need to restart it to see changes.)
+Now we have a at least very basic understanding of how the 2 are going to communicate we need to make sure
+our RPi3 is ready to communicate with MegaPi, by default it's setup for the Serial Console (covered in link above).
+So we need to disable that, so we can use it.
 
-4. Click "File-> Examples". Here are some test programs in "MakeBlockDrive->"
+1. From a terminal:
+```
+sudo raspi-config
+```
+   Go to the *"Advanced Options"* find the *"Serial"* option and disable it.
 
-5. Depending on the type of board you're using, you need to modify the header file to match.
-   For example, if you're using a mCore. You should change `#include <MeOrion.h>` to `#include <MeMCore.h>`
-   Corresponding boards and there header file are:
+2. RPi3 now disables the mini-UART when the Serial Console is turned off, what this means for you
+   is that the RaspberryPi won't recognize the port the MegaPi is connected to.  We can fix this by
+   telling our RaspberryPi to enable the UART on boot.
+   From a terminal:
+```
+nano /boot/config.txt
+```
+   Find the line (or add if missing); *"enable_uart=0"* and change it to *"enable_uart=1"*
 
-   Orion <-------->  MeOrion.h
+   Setting the enable_uart to 1, now also sets the core_freq so it's no longer necessary to worry
+   about having differing baud-rates on the mini-UART.
 
-   BaseBoard <---->  MeBaseBoard.h
+   **Note:** I've not noticed any issues running on the mini-UART (/dev/ttyS0), if you do not need bluetooth you
+   can always disable that functionality on the RaspberryPi and use the original UART (/dev/ttyAMA0) to communicate
+   with the MegaPi. To do this you need to add another line to /boot.config.txt "dtoverlay=pi3-disable-bt"
 
-   mCore <-------->  MeMCore.h
+**MORE SOON***
 
-   Shield <------->  MeShield.h
+###Firmware version
 
-   Auriga <------->  MeAuriga.h
-
-   MegaPi <------->  MeMegaPi.h
-   
-###Revision of history:
-|Author      |       Time      |   Version    |    Descr     |
-| --------   |      :-----:    |   :----:     |    :-----    |
-|Mark Yan    |     2015/07/24  |   3.0.0      |    Rebuild the old lib.|
-|Rafael Lee  |     2015/09/02  |   3.1.0      |    Added some comments and macros.|
-|Lawrence    |     2015/09/09  |   3.2.0      |    Include some Arduino's official headfiles which path specified.|
-|Mark Yan    |     2015/11/02  |   3.2.1      |    fix bug on MACOS.|
-|Mark Yan    |     2016/01/21  |   3.2.2      |    fix some library bugs.|
-|Mark Yan    |     2016/05/17  |   3.2.3      |    add support for MegaPi and Auriga Board.|
-|Mark Yan    |     2016/07/27  |   3.2.4      |    fix some JIRA issue, add PID motion for Megapi/Auriga on board encoder motor.|
-
-###Learn more from Makeblock official website: www.makeblock.com
+Examples/Firmware_for_MegaPi_New <- To distinguish between MakeBlock Offical Firmware
