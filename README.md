@@ -24,7 +24,7 @@ sudo raspi-config
    telling our RaspberryPi to enable the UART on boot.
    From a terminal:
 ```
-nano /boot/config.txt
+sudo nano /boot/config.txt
 ```
    Find the line (or add if missing); *"enable_uart=0"* and change it to *"enable_uart=1"*
 
@@ -35,7 +35,7 @@ nano /boot/config.txt
    can always disable that functionality on the RaspberryPi and use the original UART (/dev/ttyAMA0) to communicate
    with the MegaPi. To do this you need to add another line to /boot.config.txt "dtoverlay=pi3-disable-bt"
 
-***MORE SOON**
+**MORE SOON**
 
 ###Firmware version
 
@@ -43,4 +43,4 @@ Examples/Firmware_for_MegaPi_New <- To distinguish between MakeBlock Offical Fir
 
 ###Tested Functions / Sensors
 
-***COMING SOON**
+**COMING SOON**
