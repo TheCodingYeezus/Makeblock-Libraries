@@ -35,6 +35,17 @@ sudo nano /boot/config.txt
    can always disable that functionality on the RaspberryPi and use the original UART (/dev/ttyAMA0) to communicate
    with the MegaPi. To do this you need to add another line to /boot.config.txt "dtoverlay=pi3-disable-bt"
 
+##Python Code
+
+```python
+
+from megapi import *
+if __name__ == '__main__':
+   bot = MegaPi()
+   bot.start('/dev/ttyS0')
+   bot.sleep(.1)
+   bot.encoderMotorRun(1, 100)
+
 **MORE SOON**
 
 ###Firmware version
